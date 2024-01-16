@@ -1,154 +1,256 @@
+from textwrap import fill
 import tkinter as tk
 from tkinter import ttk, simpledialog, messagebox
 import os
 import sqlite3
+from turtle import fillcolor
 
-# Get the current directory
+
+def get_databases():
+    return [f.replace(".db", "") for f in os.listdir(current_directory) if f.endswith('.db')]
+
+
+def get_tables(database_name):
+    try:
+        connection = sqlite3.connect(os.path.join(
+            current_directory, f"{database_name}.db"))
+        cursor = connection.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        return [table[0] for table in tables]
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Error accessing tables: {e}")
+    finally:
+        if connection:
+            connection.close()
+
+
+def create_database():
+    new_database_name = simpledialog.askstring(
+        "Create Database", "Enter a name for the new database:")
+    if new_database_name:
+        try:
+            connection = sqlite3.connect(os.path.join(
+                current_directory, f"{new_database_name}.db"))
+            messagebox.showinfo("Success", f"Database '{
+                                new_database_name}.db' created successfully.")
+            refresh_databases()
+            update_database_list_label()
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", f"Error creating database: {e}")
+        finally:
+            if connection:
+                connection.close()
+        update_database_list_label()
+
+
+def delete_database(frame_dropdown):
+    selected_database = contentframe_2A_selection.get()
+    if selected_database != "Select New Database":
+        confirm_delete = messagebox.askyesno(
+            "Confirm Delete", f"Are you sure you want to delete {selected_database}.db?")
+        if confirm_delete:
+            try:
+                os.remove(os.path.join(current_directory,
+                                       f"{selected_database}.db"))
+                messagebox.showinfo("Success", f"Database '{
+                                    selected_database}.db' deleted successfully.")
+                refresh_databases()
+
+                # Reset the selection to "Select New Database"
+                contentframe_2A_selection.set("Select New Database")
+
+                # Update the dropdown in frame1
+                frame_dropdown['values'] = [
+                    "Select New Database"] + get_databases()
+
+            except Exception as e:
+                messagebox.showerror("Error", f"Error deleting database: {e}")
+        update_database_list_label()
+
+
+
+
+
+
+def create_main_menu():
+    menu_frame = ttk.Frame(window)
+    menu_frame.grid(row=0, column=0, sticky='nsew')
+
+    menu_bar = tk.Menu(menu_frame)
+
+    main_menu = tk.Menu(menu_bar, tearoff=0)
+    main_menu.add_command(label="Manage Databases", command=manage_databases)
+    main_menu.add_command(label="Manage Tables", command=manage_tables)
+    main_menu.add_command(label="Manage Columns", command=manage_columns)
+    main_menu.add_command(label="Manage Content", command=manage_content)
+    main_menu.add_separator()
+    main_menu.add_command(label="Exit", command=window.destroy)
+    menu_bar.add_cascade(label="Main", menu=main_menu)
+
+    about_menu = tk.Menu(menu_bar, tearoff=0)
+    about_menu.add_command(label="About", command=lambda: messagebox.showinfo(
+        "About", "Your application description goes here."))
+    menu_bar.add_cascade(label="About", menu=about_menu)
+
+    window.config(menu=menu_bar)
+
+
+def manage_databases():
+    for widget in window.winfo_children():
+        widget.destroy()
+
+    create_main_menu()
+
+    s = ttk.Style()
+    s.configure("Frame1.TFrame", background='grey')
+
+    masterframe_1A = ttk.Frame(window, borderwidth=2,
+                               relief="groove", style="Frame1.TFrame")
+    masterframe_1A.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    masterframe_1A.columnconfigure(0, weight=1)
+
+    contentframe_1A = ttk.Frame(masterframe_1A, borderwidth=2,
+                                relief="groove", style="My.TFrame", width=1)
+    contentframe_1A.grid(row=1, column=0, sticky='ew', padx=30, pady=5)
+
+    button_create_database = ttk.Button(
+        contentframe_1A, text='Create Database', command=create_database)
+    button_create_database.grid(row=0, column=0, sticky='w', padx=5, pady=5)
+
+    label_1A = ttk.Label(
+        contentframe_1A, text='Press to create a database.', background='#7BCCB5')
+    label_1A.grid(row=0, column=1, sticky='w', padx=5, pady=5)
+
+    contentframe_2A = ttk.Frame(masterframe_1A, borderwidth=2,
+                                relief="groove", style="My.TFrame")
+    contentframe_2A.grid(row=2, column=0, sticky='nsew', padx=30, pady=5)
+
+    # Define contentframe_2A_selection and contentframe_2A_dropdown in the global scope
+    global contentframe_2A_selection, contentframe_2A_dropdown
+    contentframe_2A_selection = tk.StringVar()
+    contentframe_2A_selection.set("Select Database")
+    contentframe_2A_dropdown = ttk.Combobox(contentframe_2A, values=[
+        "Select Database"] + get_databases(), state='readonly', textvariable=contentframe_2A_selection)
+    contentframe_2A_dropdown.grid(
+        row=0, column=0, sticky='nsew', padx=5, pady=5)
+
+    label_2A = ttk.Label(
+        contentframe_2A, text='Select database from the dropdown to delete.', background='#7BCCB5')
+    label_2A.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
+
+    button_delete_database = ttk.Button(
+        contentframe_2A, text='Delete Database', command=lambda: delete_database(contentframe_2A_dropdown))
+    button_delete_database.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+
+    contentframe_3A = ttk.Frame(
+        masterframe_1A, borderwidth=2, relief="groove", style="My.TFrame")
+
+    contentframe_3A.grid(row=3, column=0, sticky='nsew', padx=30, pady=5)
+
+    label_3A = ttk.Label(
+        contentframe_3A, text='All databases in the folder', background='#7BCCB5')
+    label_3A.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+
+    frame_database_list = ttk.Frame(
+        contentframe_3A, borderwidth=2, relief="groove", style="My.TFrame")
+    frame_database_list.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+
+    global label_database_list
+    label_database_list = ttk.Label(
+        frame_database_list, text='\n'.join(get_databases()), background='white')
+    label_database_list.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+
+def refresh_databases():
+    databases = get_databases()
+    updated_values = ["Select New Database"] + databases
+
+    # Update the contentframe_2A_dropdown with the latest list of databases
+    contentframe_2A_dropdown['values'] = updated_values
+    frame1_dropdown['values'] = updated_values
+
+    # Update the label_database_list with the latest list of databases
+    label_database_list.config(text='\n'.join(databases))
+
+
+def update_database_list_label():
+    label_database_list.config(text='\n'.join(get_databases()))
+
+
+def manage_columns():
+    for widget in window.winfo_children():
+        widget.destroy()
+
+    create_main_menu()
+
+    frame_manage_columns = ttk.Frame(
+        window, borderwidth=2, relief="groove", style="My.TFrame")
+    frame_manage_columns.grid(row=1, column=0, sticky='nsew', padx=30, pady=5)
+
+    label_manage_columns = ttk.Label(
+        frame_manage_columns, text='Manage Columns', background='green')
+    label_manage_columns.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+
+
+def manage_content():
+    for widget in window.winfo_children():
+        widget.destroy()
+
+    create_main_menu()
+
+    frame_manage_content = ttk.Frame(
+        window, borderwidth=2, relief="groove", style="My.TFrame")
+    frame_manage_content.grid(row=1, column=0, sticky='nsew', padx=30, pady=5)
+
+    label_manage_content = ttk.Label(
+        frame_manage_content, text='Manage Content', background='green')
+    label_manage_content.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+
+def manage_tables():
+    for widget in window.winfo_children():
+        widget.destroy()
+
+    create_main_menu()
+
+    frame1 = ttk.Frame(window, borderwidth=2,
+                       relief="groove", style="My.TFrame")
+    frame1.grid(row=1, column=0, sticky='nsew', padx=30, pady=5)
+
+    global frame1_dropdown  # Define frame1_dropdown in the global scope
+    frame1_selection = tk.StringVar()
+    frame1_selection.set("Select Database")
+    frame1_dropdown = ttk.Combobox(frame1, values=[
+                                   "Select Database"] + get_databases(), state='readonly', textvariable=frame1_selection)
+    frame1_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+
+    def show_tables():
+        selected_database = frame1_dropdown.get()
+        if selected_database != "Select Database":
+            tables = get_tables(selected_database)
+            messagebox.showinfo("Tables", f"Tables in {
+                                selected_database}.db:\n{', '.join(tables)}")
+        else:
+            messagebox.showwarning("Warning", "Please select a database.")
+
+    frame1_button_show_tables = ttk.Button(
+        frame1, text='Show Tables', command=show_tables)
+    frame1_button_show_tables.grid(
+        row=0, column=1, sticky='nsew', padx=5, pady=5)
+
+    # Now you can use frame1_dropdown in the global scope
+    refresh_databases()
+
+
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
-# Get a list of databases in the current directory
-databases = [f.replace(".db", "") for f in os.listdir(
-    current_directory) if f.endswith('.db')]
-
-# Window
 window = tk.Tk()
 window.title('Window of widgets')
 window.geometry('800x500+900+100')
 window.attributes('-alpha', 0.8)
 
-# Create a style for ttk frames
-style = ttk.Style()
-style.configure("My.TFrame", background="grey")
-
-# Frame 0
-frame0 = ttk.Frame(window, borderwidth=2, relief="groove", style="My.TFrame")
-frame0.grid(row=0, column=0, sticky='nsew', padx=30, pady=5)
-
-
-def create_new_database():
-    new_database_name = simpledialog.askstring(
-        "New Database", "Enter a name for the new database:")
-    if new_database_name:
-        create_new_database_in_current_directory(new_database_name)
-        refresh_dropdowns()
-        frame0_label.config(text=f"Database {new_database_name} created")
-
-
-def create_new_database_in_current_directory(database_name):
-    # Create a new SQLite database in the current directory
-    db_connection = sqlite3.connect(os.path.join(
-        current_directory, f"{database_name}.db"))
-    # Enable foreign key support
-    db_connection.execute("PRAGMA foreign_keys = ON")
-    db_connection.commit()
-
-
-# Button to create a new database
-create_button = ttk.Button(
-    frame0, text='Create Database', command=create_new_database)
-create_button.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-
-# Label to display status
-frame0_label = ttk.Label(
-    frame0, text='Press to create a database.', background='green')
-frame0_label.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
-
-# Frame 1
-frame1 = ttk.Frame(window, borderwidth=2, relief="groove", style="My.TFrame")
-frame1.grid(row=1, column=0, sticky='nsew', padx=30, pady=5)
-
-frame1_selection = tk.StringVar()
-frame1_selection.set("Select Database")
-frame1_dropdown = ttk.Combobox(frame1, values=[
-                               "Select Database"] + databases, state='readonly', textvariable=frame1_selection)
-frame1_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-
-button_perform_action1 = ttk.Button(frame1, text='Choose Database', command=lambda: frame1_label.config(
-    text=f'Selected database: {frame1_selection.get()}'))
-button_perform_action1.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
-frame1_label = ttk.Label(
-    frame1, text='Select database frame1', background='green')
-frame1_label.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
-
-# Frame 2
-frame2 = ttk.Frame(window, borderwidth=2, relief="groove", style="My.TFrame")
-frame2.grid(row=2, column=0, sticky='nsew', padx=30, pady=5)
-
-frame2_selection = tk.StringVar()
-frame2_selection.set("Select Database")
-frame2_dropdown = ttk.Combobox(frame2, values=[
-                               "Select Database"] + databases, state='readonly', textvariable=frame2_selection)
-frame2_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-
-button_perform_action2 = ttk.Button(frame2, text='Choose Database', command=lambda: frame2_label.config(
-    text=f'Selected database: {frame2_selection.get()}'))
-button_perform_action2.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
-frame2_label = ttk.Label(
-    frame2, text='Select database frame2', background='green')
-frame2_label.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
-
-# Frame 3
-frame3 = ttk.Frame(window, borderwidth=2, relief="groove", style="My.TFrame")
-frame3.grid(row=3, column=0, sticky='nsew', padx=30, pady=5)
-
-frame3_selection = tk.StringVar()
-frame3_selection.set("Select Database")
-frame3_dropdown = ttk.Combobox(frame3, values=[
-                               "Select Database"] + databases, state='readonly', textvariable=frame3_selection)
-frame3_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-
-frame3_label = ttk.Label(
-    frame3, text='Select database from the dropdown to delete.', background='green')
-frame3_label.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
-
-
-# Function to refresh dropdowns
-
-
-def refresh_dropdowns():
-    global databases
-    databases = [f.replace(".db", "") for f in os.listdir(
-        current_directory) if f.endswith('.db')]
-    frame1_dropdown['values'] = ["Select Database"] + databases
-    frame2_dropdown['values'] = ["Select Database"] + databases
-    frame3_dropdown['values'] = ["Select Database"] + databases
-
-# Function to delete a database
-
-
-def delete_database():
-    selected_option = frame3_selection.get()
-    if selected_option and selected_option != "Select Database":
-        confirmation = messagebox.askyesno(
-            "Delete Database", f"Are you sure you want to delete {selected_option} database?")
-        if confirmation:
-            delete_database_file(selected_option)
-            refresh_dropdowns()
-            frame3_selection.set("Select Database")  # Reset the selection
-            frame3_label.config(text=f"Database {
-                                selected_option} deleted. Select another database to delete or exit.")
-
-
-# Function to delete a database file
-
-def delete_database_file(database_name):
-    # Delete the database file
-    database_file = os.path.join(current_directory, f"{database_name}.db")
-    if os.path.exists(database_file):
-        os.remove(database_file)
-
-
-# Button to delete a database
-button_perform_action3 = ttk.Button(
-    frame3, text='Delete Database', command=delete_database)
-button_perform_action3.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
-
-# Grid
 window.columnconfigure(0, weight=1)
 window.rowconfigure(0, weight=1)
-window.rowconfigure(1, weight=1)
-window.rowconfigure(2, weight=1)
-window.rowconfigure(3, weight=1)
 
-# Run
+create_main_menu()
+
 window.mainloop()
