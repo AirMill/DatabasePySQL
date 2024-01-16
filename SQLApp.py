@@ -105,60 +105,47 @@ def manage_databases():
     s = ttk.Style()
     s.configure("Frame1.TFrame", background='grey')
 
-    masterframe_1A = ttk.Frame(window, borderwidth=2,
-                               relief="groove", style="Frame1.TFrame")
+    masterframe_1A = ttk.Frame(window, borderwidth=2,relief="groove", style="Frame1.TFrame")
     masterframe_1A.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
     masterframe_1A.columnconfigure(0, weight=1)
 
-    contentframe_1A = ttk.Frame(masterframe_1A, borderwidth=2,
-                                relief="groove", style="My.TFrame", width=1)
+    contentframe_1A = ttk.Frame(masterframe_1A, borderwidth=2,relief="groove", style="My.TFrame", width=1)
     contentframe_1A.grid(row=1, column=0, sticky='ew', padx=30, pady=5)
 
-    button_create_database = ttk.Button(
-        contentframe_1A, text='Create Database', command=create_database)
+    button_create_database = ttk.Button(contentframe_1A, text='Create Database', command=create_database)
     button_create_database.grid(row=0, column=0, sticky='w', padx=5, pady=5)
 
-    label_1A = ttk.Label(
-        contentframe_1A, text='Press to create a database.', background='#7BCCB5')
+    label_1A = ttk.Label(contentframe_1A, text='Press to create a database.', background='#7BCCB5')
     label_1A.grid(row=0, column=1, sticky='w', padx=5, pady=5)
 
-    contentframe_2A = ttk.Frame(masterframe_1A, borderwidth=2,
-                                relief="groove", style="My.TFrame")
+    contentframe_2A = ttk.Frame(masterframe_1A, borderwidth=2,relief="groove", style="My.TFrame")
     contentframe_2A.grid(row=2, column=0, sticky='nsew', padx=30, pady=5)
 
     # Define contentframe_2A_selection and contentframe_2A_dropdown in the global scope
     global contentframe_2A_selection, contentframe_2A_dropdown
     contentframe_2A_selection = tk.StringVar()
     contentframe_2A_selection.set("Select Database")
-    contentframe_2A_dropdown = ttk.Combobox(contentframe_2A, values=[
-        "Select Database"] + get_databases(), state='readonly', textvariable=contentframe_2A_selection)
-    contentframe_2A_dropdown.grid(
-        row=0, column=0, sticky='nsew', padx=5, pady=5)
+    contentframe_2A_dropdown = ttk.Combobox(contentframe_2A, values=["Select Database"] + get_databases(), state='readonly', textvariable=contentframe_2A_selection)
+    contentframe_2A_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
 
-    label_2A = ttk.Label(
-        contentframe_2A, text='Select database from the dropdown to delete.', background='#7BCCB5')
+    label_2A = ttk.Label(contentframe_2A, text='Select database from the dropdown to delete.', background='#7BCCB5')
     label_2A.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
 
-    button_delete_database = ttk.Button(
-        contentframe_2A, text='Delete Database', command=lambda: delete_database(contentframe_2A_dropdown))
+    button_delete_database = ttk.Button(contentframe_2A, text='Delete Database', command=lambda: delete_database(contentframe_2A_dropdown))
     button_delete_database.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
 
-    contentframe_3A = ttk.Frame(
-        masterframe_1A, borderwidth=2, relief="groove", style="My.TFrame")
+    contentframe_3A = ttk.Frame(masterframe_1A, borderwidth=2, relief="groove", style="My.TFrame")
 
     contentframe_3A.grid(row=3, column=0, sticky='nsew', padx=30, pady=5)
 
-    label_3A = ttk.Label(
-        contentframe_3A, text='All databases in the folder', background='#7BCCB5')
+    label_3A = ttk.Label(contentframe_3A, text='All databases in the folder', background='#7BCCB5')
     label_3A.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
 
-    frame_database_list = ttk.Frame(
-        contentframe_3A, borderwidth=2, relief="groove", style="My.TFrame")
+    frame_database_list = ttk.Frame(contentframe_3A, borderwidth=2, relief="groove", style="My.TFrame")
     frame_database_list.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
 
     global label_database_list
-    label_database_list = ttk.Label(
-        frame_database_list, text='\n'.join(get_databases()), background='white')
+    label_database_list = ttk.Label(frame_database_list, text='\n'.join(get_databases()), background='white')
     label_database_list.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
 
 def refresh_databases():
@@ -183,13 +170,48 @@ def manage_columns():
 
     create_main_menu()
 
-    frame_manage_columns = ttk.Frame(
-        window, borderwidth=2, relief="groove", style="My.TFrame")
-    frame_manage_columns.grid(row=1, column=0, sticky='nsew', padx=30, pady=5)
+    #####
 
-    label_manage_columns = ttk.Label(
-        frame_manage_columns, text='Manage Columns', background='green')
-    label_manage_columns.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    s = ttk.Style()
+    s.configure("Frame1.TFrame", background='grey')
+
+    masterframe_1B = ttk.Frame(window, borderwidth=2,
+                               relief="groove", style="Frame1.TFrame")
+    masterframe_1B.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    masterframe_1B.columnconfigure(0, weight=1)
+
+    contentframe_1B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_1B.grid(row=1, column=0, sticky='ew', padx=30, pady=5)
+    contentframe_2B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_2B.grid(row=2, column=0, sticky='ew', padx=30, pady=5)
+    contentframe_3B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_3B.grid(row=3, column=0, sticky='ew', padx=30, pady=5)
+    
+    global contentframe_1B_selection, contentframe_1B_dropdown
+    contentframe_1B_selection = tk.StringVar()
+    contentframe_1B_selection.set("Select Database")
+    contentframe_1B_dropdown = ttk.Combobox(contentframe_1B, values=["Select Database"] + get_databases(), state='readonly', textvariable=contentframe_1B_selection)
+    contentframe_1B_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    
+    label_1B = ttk.Label(contentframe_1B, text='Select database from the dropdown menu', background='#7BCCB5')
+    label_1B.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    
+    global contentframe_2B_selection, contentframe_2B_dropdown
+    contentframe_2B_selection = tk.StringVar()
+    contentframe_2B_selection.set("Select Tables")
+    contentframe_2B_dropdown = ttk.Combobox(contentframe_2B, values=["Select Database"] + get_databases(), state='readonly', textvariable=contentframe_2B_selection)
+    contentframe_2B_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    
+    label_2B = ttk.Label(contentframe_2B, text='Choose tables for the selected database', background='#7BCCB5')
+    label_2B.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+        
+    button_2B = ttk.Button(contentframe_2B, text='Select table', command=lambda:print('Table ___ selected!'))
+    button_2B.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
+    
+    label_3B = ttk.Label(contentframe_3B, text='Columns from the selected table:', background='#7BCCB5')
+    label_3B.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+
+    
 
 
 def manage_content():
@@ -198,47 +220,99 @@ def manage_content():
 
     create_main_menu()
 
-    frame_manage_content = ttk.Frame(
-        window, borderwidth=2, relief="groove", style="My.TFrame")
-    frame_manage_content.grid(row=1, column=0, sticky='nsew', padx=30, pady=5)
+    s = ttk.Style()
+    s.configure("Frame1.TFrame", background='grey')
 
-    label_manage_content = ttk.Label(
-        frame_manage_content, text='Manage Content', background='green')
-    label_manage_content.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    masterframe_1B = ttk.Frame(window, borderwidth=2,
+                               relief="groove", style="Frame1.TFrame")
+    masterframe_1B.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    masterframe_1B.columnconfigure(0, weight=1)
+
+    contentframe_1B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_1B.grid(row=1, column=0, sticky='ew', padx=30, pady=5)
+    contentframe_2B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_2B.grid(row=2, column=0, sticky='ew', padx=30, pady=5)
+    contentframe_3B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_3B.grid(row=3, column=0, sticky='ew', padx=30, pady=5)
+    
+    global contentframe_1B_selection, contentframe_1B_dropdown
+    contentframe_1B_selection = tk.StringVar()
+    contentframe_1B_selection.set("Select Database")
+    contentframe_1B_dropdown = ttk.Combobox(contentframe_1B, values=["Select Database"] + get_databases(), state='readonly', textvariable=contentframe_1B_selection)
+    contentframe_1B_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    
+    label_1B = ttk.Label(contentframe_1B, text='Select database from the dropdown menu', background='#7BCCB5')
+    label_1B.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    
+    global contentframe_2B_selection, contentframe_2B_dropdown
+    contentframe_2B_selection = tk.StringVar()
+    contentframe_2B_selection.set("Select Tables")
+    
+    
+    button_2B = ttk.Button(contentframe_2B, text='Choose file to upload', command=lambda:print('Table ___ selected!'))
+    button_2B.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    
+    contentframe_2B_dropdown = ttk.Combobox(contentframe_2B, values=['table 1','table 2'], state='readonly')
+    contentframe_2B_dropdown.grid(row=1, column=1, sticky='nsew', padx=5, pady=5)
+    
+    label_2B = ttk.Label(contentframe_2B, text='Choose table where to place file name', background='#7BCCB5')
+    label_2B.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+    
+    contentframe_2B_dropdown = ttk.Combobox(contentframe_2B, values=['table 1','table 2'], state='readonly')
+    contentframe_2B_dropdown.grid(row=2, column=1, sticky='nsew', padx=5, pady=5)
+    
+    label_2B = ttk.Label(contentframe_2B, text='Choose table where to place file content', background='#7BCCB5')
+    label_2B.grid(row=2, column=0, sticky='nsew', padx=5, pady=5)
+        
+    button_2B = ttk.Button(contentframe_2B, text='Upload file to database', command=lambda:print('Table ___ selected!'))
+    button_2B.grid(row=3, column=0, sticky='nsew', padx=5, pady=5)
+    
+    label_3B = ttk.Label(contentframe_3B, text='Result of the upload:', background='#7BCCB5')
+    label_3B.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
 
 def manage_tables():
-    for widget in window.winfo_children():
-        widget.destroy()
+    
+    s = ttk.Style()
+    s.configure("Frame1.TFrame", background='grey')
+    
+    masterframe_1B = ttk.Frame(window, borderwidth=2,
+                               relief="groove", style="Frame1.TFrame")
+    masterframe_1B.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    masterframe_1B.columnconfigure(0, weight=1)
 
-    create_main_menu()
-
-    frame1 = ttk.Frame(window, borderwidth=2,
-                       relief="groove", style="My.TFrame")
-    frame1.grid(row=1, column=0, sticky='nsew', padx=30, pady=5)
-
-    global frame1_dropdown  # Define frame1_dropdown in the global scope
-    frame1_selection = tk.StringVar()
-    frame1_selection.set("Select Database")
-    frame1_dropdown = ttk.Combobox(frame1, values=[
-                                   "Select Database"] + get_databases(), state='readonly', textvariable=frame1_selection)
-    frame1_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-
-    def show_tables():
-        selected_database = frame1_dropdown.get()
-        if selected_database != "Select Database":
-            tables = get_tables(selected_database)
-            messagebox.showinfo("Tables", f"Tables in {
-                                selected_database}.db:\n{', '.join(tables)}")
-        else:
-            messagebox.showwarning("Warning", "Please select a database.")
-
-    frame1_button_show_tables = ttk.Button(
-        frame1, text='Show Tables', command=show_tables)
-    frame1_button_show_tables.grid(
-        row=0, column=1, sticky='nsew', padx=5, pady=5)
-
-    # Now you can use frame1_dropdown in the global scope
-    refresh_databases()
+    contentframe_1B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_1B.grid(row=1, column=0, sticky='ew', padx=30, pady=5)
+    contentframe_2B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_2B.grid(row=2, column=0, sticky='ew', padx=30, pady=5)
+    contentframe_3B = ttk.Frame(masterframe_1B, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_3B.grid(row=3, column=0, sticky='ew', padx=30, pady=5)
+    
+    global contentframe_1B_selection, contentframe_1B_dropdown
+    contentframe_1B_selection = tk.StringVar()
+    contentframe_1B_selection.set("Select Database")
+    contentframe_1B_dropdown = ttk.Combobox(contentframe_1B, values=["Select Database"] + get_databases(), state='readonly', textvariable=contentframe_1B_selection)
+    contentframe_1B_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    
+    label_1B = ttk.Label(contentframe_1B, text='Select database from the dropdown menu', background='#7BCCB5')
+    label_1B.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    
+    global contentframe_2B_selection, contentframe_2B_dropdown
+    contentframe_2B_selection = tk.StringVar()
+    contentframe_2B_selection.set("Select Tables")
+    contentframe_2B_dropdown = ttk.Combobox(contentframe_2B, values=["Select Database"] + get_databases(), state='readonly', textvariable=contentframe_2B_selection)
+    contentframe_2B_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    
+    label_2B = ttk.Label(contentframe_2B, text='Choose tables for the selected database', background='#7BCCB5')
+    label_2B.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+        
+    button_3B = ttk.Button(contentframe_3B, text='Create table', command=lambda:print('Table ___ created!'))
+    button_3B.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    button_3B = ttk.Button(contentframe_3B, text='Rename table', command=lambda:print('Table ___ renamed!'))
+    button_3B.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    button_3B = ttk.Button(contentframe_3B, text='Delete table', command=lambda:print('Table ___ deleted!'))
+    button_3B.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
+    
+    
 
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
