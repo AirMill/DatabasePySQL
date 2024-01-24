@@ -47,9 +47,9 @@ def create_about_frame():
     s.configure("Frame1.TFrame", background='white')
 
     # Create and configure the main frame
-    main_frame = ttk.Frame(window, borderwidth=2, relief="groove", style="Frame1.TFrame")
-    main_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-    main_frame.columnconfigure(0, weight=1)
+    main_frame_about = ttk.Frame(window, borderwidth=2, relief="groove", style="Frame1.TFrame")
+    main_frame_about.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    main_frame_about.columnconfigure(0, weight=1)
 
     # Create a new style for the about frame
     about_frame_style = ttk.Style()
@@ -58,7 +58,7 @@ def create_about_frame():
     about_label_style.configure("AboutFrame.TLabel", background='#FAEBD7')  # Set the background color
 
     # Create the about frame using the new style
-    about_frame = ttk.Frame(main_frame, borderwidth=2, relief="groove", style="AboutFrame.TFrame")
+    about_frame = ttk.Frame(main_frame_about, borderwidth=2, relief="groove", style="AboutFrame.TFrame")
     about_frame.pack(expand=True)
 
     # Load the original logo image (replace 'path_to_logo.png' with the actual path to your logo)
@@ -117,8 +117,8 @@ def manage_databases():
     label_2A = ttk.Label(contentframe_2A, text='Select database from the dropdown to delete.', background='#7BCCB5')
     label_2A.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
 
-    button_delete_database = ttk.Button(contentframe_2A, text='Delete Database', command=lambda: delete_database(contentframe_2A_dropdown))
-    button_delete_database.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    button_delete_database_2A = ttk.Button(contentframe_2A, text='Delete Database', command=lambda: delete_database(contentframe_2A_dropdown))
+    button_delete_database_2A.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
 
     contentframe_3A = ttk.Frame(masterframe_1A, borderwidth=2, relief="groove", style="My.TFrame")
 
@@ -140,7 +140,7 @@ def refresh_databases():
 
     # Update the contentframe_2A_dropdown with the latest list of databases
     contentframe_2A_dropdown['values'] = updated_values
-    frame1_dropdown['values'] = updated_values
+    
 
     # Update the label_database_list with the latest list of databases
     label_database_list.config(text='\n'.join(databases))
@@ -232,7 +232,7 @@ def manage_tables():
         selected_database = contentframe_1B_selection.get()
 
         if selected_database != "Select Database":
-            new_table_name = tkinter.simpledialog.askstring(
+            new_table_name = tk.simpledialog.askstring(
                 "Create Table", f"Enter a name for the new table in '{selected_database}' database:")
             if new_table_name:
                 connection_2 = None  # Initialize the connection_2 variable
@@ -292,7 +292,7 @@ def manage_tables():
         selected_table = contentframe_3B_selection.get()
 
         if selected_database != "Select Database" and selected_table != "Select Table":
-            new_table_name = tkinter.simpledialog.askstring(
+            new_table_name = tk.simpledialog.askstring(
                 "Rename Table", f"Enter a new name for '{selected_table}' in '{selected_database}' database:")
             if new_table_name:
                 connection_4 = None  # Initialize the connection_4 variable
@@ -483,7 +483,7 @@ def manage_columns():
     def update_table_dropdown(event):
         selected_database = contentframe_1C_selection.get()
         if selected_database != "Select Database":
-            tables = get_tables(selected_database)
+            tables = get_tables_col(selected_database)                                  ################################################################!!!!!!#################################################
             updated_values = ["Select Table"] + tables
             contentframe_2C_dropdown['values'] = updated_values
             contentframe_2C_selection.set("Select Table")
@@ -504,7 +504,7 @@ def manage_columns():
         selected_database = contentframe_1C_selection.get()
 
         if selected_table != "Select Table" and selected_database != "Select Database":
-            columns = get_columns(selected_database, selected_table)
+            columns = get_columns_col(selected_database, selected_table)
             updated_values = ["Select Column"] + columns
             contentframe_3C_dropdown['values'] = updated_values
             contentframe_3C_selection.set("Select Column")
@@ -549,281 +549,293 @@ def manage_columns():
     label_3C_5 = ttk.Label(contentframe_3C, text='Press to delete the column', background='#7BCCB5')
     label_3C_5.grid(row=5, column=1, sticky='nsew', padx=5, pady=5)
 
-    window.mainloop()
+    
 
+def get_columns_col(database_name, table_name):
+    connection_9 = None  # Initialize the connection_9 variable
 
+    try:
+        connection_9 = sqlite3.connect(os.path.join(current_directory, f"{database_name}.db"))
+        cursor = connection_9.cursor()
 
+        # Fetch column names from the specified table
+        cursor.execute(f"PRAGMA table_info({table_name});")
+        columns = cursor.fetchall()
 
-    def create_column(selected_database, selected_table):
-        def on_create_column():
-            column_name = column_name_entry.get()
-            if column_name:
-                data_type = data_type_combobox.get()
+        # Extract column names from the result
+        column_names = [column[1] for column in columns]
 
-                connection_8 = None
-                try:
-                    connection_8 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
-                    cursor = connection_8.cursor()
+        return column_names
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Error fetching columns: {e}")
+    finally:
+        if connection_9:
+            connection_9.close()
 
-                    # Execute the SQL statement to add a column
-                    cursor.execute(f"ALTER TABLE {selected_table} ADD COLUMN {column_name} {data_type};")
-                    connection_8.commit()
+def get_tables_col(database_name):
+    connection_9_1 = None  # Initialize the connection_9_1 variable
 
-                    # Inform the user that the column has been created
-                    messagebox.showinfo("Success", f"Column '{column_name}' created successfully!")
+    try:
+        connection_9_1 = sqlite3.connect(os.path.join(
+            current_directory, f"{database_name}.db"))
+        cursor = connection_9_1.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        return [table[0] for table in tables]
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Error accessing tables: {e}")
+    finally:
+        if connection_9_1:
+            connection_9_1.close()
 
-                    # Fetch and print the updated columns
-                    updated_columns = get_columns(selected_database, selected_table)
+def create_column(selected_database, selected_table):
+    def on_create_column():
+        column_name = column_name_entry.get()
+        if column_name:
+            data_type = data_type_combobox.get()
 
-                    # Update the values in contentframe_3C_dropdown
-                    updated_values = ["Select Column"] + updated_columns
-                    contentframe_3C_dropdown['values'] = updated_values
-                    contentframe_3C_selection.set("Select Column")
-
-                except sqlite3.Error as e:
-                    messagebox.showerror("Error", f"Error creating column: {e}")
-                finally:
-                    if connection_8 is not None:
-                        connection_8.close()
-
-                popup.destroy()
-
-
-        popup = Toplevel()
-        popup.title("Create Column")
-
-        # Entry for column name
-        ttk.Label(popup, text="Column Name:").grid(row=0, column=0, padx=5, pady=5)
-        column_name_entry = ttk.Entry(popup)
-        column_name_entry.grid(row=0, column=1, padx=5, pady=5)
-
-        # Combo box for data types
-        ttk.Label(popup, text="Data Type:").grid(row=1, column=0, padx=5, pady=5)
-        data_types = ["TEXT", "INTEGER", "REAL", "DECIMAL", "BOOLEAN", "FLOAT"]
-        data_type_combobox = ttk.Combobox(popup, values=data_types, state="readonly")
-        data_type_combobox.set(data_types[0])
-        data_type_combobox.grid(row=1, column=1, padx=5, pady=5)
-
-        # Button to create column
-        ttk.Button(popup, text="Create Column", command=on_create_column).grid(row=2, column=0, columnspan=2, pady=10)
-
-        # Focus on the entry field when the popup is opened
-        column_name_entry.focus_set()
-
-        popup.transient()
-        popup.grab_set()
-        popup.wait_window()
-
-
-    def get_columns(database_name, table_name):
-        connection_9 = None  # Initialize the connection_9 variable
-
-        try:
-            connection_9 = sqlite3.connect(os.path.join(current_directory, f"{database_name}.db"))
-            cursor = connection_9.cursor()
-
-            # Fetch column names from the specified table
-            cursor.execute(f"PRAGMA table_info({table_name});")
-            columns = cursor.fetchall()
-
-            # Extract column names from the result
-            column_names = [column[1] for column in columns]
-
-            return column_names
-        except sqlite3.Error as e:
-            messagebox.showerror("Error", f"Error fetching columns: {e}")
-        finally:
-            if connection_9:
-                connection_9.close()
-
-
-    def on_rename_column(selected_database, selected_table):
-        selected_column = contentframe_3C_selection.get()
-        if selected_column != "Select Column":
-            new_column_name = simpledialog.askstring("Rename Column", f"Enter new name for column '{selected_column}':")
-
-            if new_column_name:
-                connection_10 = None
-                try:
-                    connection_10 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
-                    cursor = connection_10.cursor()
-
-                    # Execute the SQL statement to rename the column
-                    cursor.execute(f"ALTER TABLE {selected_table} RENAME COLUMN {selected_column} TO {new_column_name};")
-                    connection_10.commit()
-
-                    # Inform the user that the column has been renamed
-                    messagebox.showinfo("Success", f"Column '{selected_column}' renamed to '{new_column_name}' successfully!")
-
-                    # Fetch and print the updated columns
-                    updated_columns = get_columns(selected_database, selected_table)
-
-                    # Update the values in contentframe_3C_dropdown
-                    updated_values = ["Select Column"] + updated_columns
-                    contentframe_3C_dropdown['values'] = updated_values
-                    contentframe_3C_selection.set("Select Column")
-
-                except sqlite3.Error as e:
-                    messagebox.showerror("Error", f"Error renaming column: {e}")
-                finally:
-                    if connection_10 is not None:
-                        connection_10.close()
-
-    def on_delete_column(selected_database, selected_table):
-        selected_column = contentframe_3C_selection.get()
-
-        if selected_column != "Select Column":
-            connection_11 = None  # Initialize the connection_11 variable
-
+            connection_8 = None
             try:
-                connection_11 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
-                cursor = connection_11.cursor()
+                connection_8 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
+                cursor = connection_8.cursor()
 
-                # Execute the SQL statement to delete the column
-                cursor.execute(f"ALTER TABLE {selected_table} DROP COLUMN {selected_column};")
-                connection_11.commit()
+                # Execute the SQL statement to add a column
+                cursor.execute(f"ALTER TABLE {selected_table} ADD COLUMN {column_name} {data_type};")
+                connection_8.commit()
 
-                # Inform the user that the column has been deleted
-                messagebox.showinfo("Success", f"Column '{selected_column}' deleted successfully!")
+                # Inform the user that the column has been created
+                messagebox.showinfo("Success", f"Column '{column_name}' created successfully!")
 
                 # Fetch and print the updated columns
-                update_column_dropdown(selected_database, selected_table)
-                updated_columns = get_columns(selected_database, selected_table)
-                print(updated_columns)
+                updated_columns = get_columns_col(selected_database, selected_table)
+
+                # Update the values in contentframe_3C_dropdown
+                updated_values = ["Select Column"] + updated_columns
+                contentframe_3C_dropdown['values'] = updated_values
+                contentframe_3C_selection.set("Select Column")
 
             except sqlite3.Error as e:
-                messagebox.showerror("Error", f"Error deleting column: {e}")
-
+                messagebox.showerror("Error", f"Error creating column: {e}")
             finally:
-                if connection_11:
-                    connection_11.close()
+                if connection_8 is not None:
+                    connection_8.close()
+
+            popup.destroy()
 
 
-    def update_column_dropdown(selected_database, selected_table):
-        columns = get_columns(selected_database, selected_table)
-        updated_values = ["Select Column"] + columns
-        contentframe_3C_dropdown['values'] = updated_values
-        contentframe_3C_selection.set("Select Column")
-        
-    def on_change_column_type(selected_database, selected_table):
-        selected_column = contentframe_3C_selection.get()
+    popup = Toplevel()
+    popup.title("Create Column")
 
-        if selected_column != "Select Column":
-            # Create data_types inside the function
-            data_types = ["TEXT", "INTEGER", "REAL", "DECIMAL", "BOOLEAN", "FLOAT"]
-            connection_12 = None
+    # Entry for column name
+    ttk.Label(popup, text="Column Name:").grid(row=0, column=0, padx=5, pady=5)
+    column_name_entry = ttk.Entry(popup)
+    column_name_entry.grid(row=0, column=1, padx=5, pady=5)
+
+    # Combo box for data types
+    ttk.Label(popup, text="Data Type:").grid(row=1, column=0, padx=5, pady=5)
+    data_types = ["TEXT", "INTEGER", "REAL", "DECIMAL", "BOOLEAN", "FLOAT"]
+    data_type_combobox = ttk.Combobox(popup, values=data_types, state="readonly")
+    data_type_combobox.set(data_types[0])
+    data_type_combobox.grid(row=1, column=1, padx=5, pady=5)
+
+    # Button to create column
+    ttk.Button(popup, text="Create Column", command=on_create_column).grid(row=2, column=0, columnspan=2, pady=10)
+
+    # Focus on the entry field when the popup is opened
+    column_name_entry.focus_set()
+
+    popup.transient()
+    popup.grab_set()
+    popup.wait_window()
+
+
+def on_rename_column(selected_database, selected_table):
+    selected_column = contentframe_3C_selection.get()
+    if selected_column != "Select Column":
+        new_column_name = simpledialog.askstring("Rename Column", f"Enter new name for column '{selected_column}':")
+
+        if new_column_name:
+            connection_10 = None
             try:
-                # Create the data types dropdown in a popup window
-                popup = tk.Toplevel(window)
-                popup.title("Change Column Type")
+                connection_10 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
+                cursor = connection_10.cursor()
 
-                ttk.Label(popup, text="Data Type:").grid(row=1, column=0, padx=5, pady=5)
-                data_type_combobox = ttk.Combobox(popup, values=data_types, state="readonly")
-                data_type_combobox.set(data_types[0])
-                data_type_combobox.grid(row=1, column=1, padx=5, pady=5)
+                # Execute the SQL statement to rename the column
+                cursor.execute(f"ALTER TABLE {selected_table} RENAME COLUMN {selected_column} TO {new_column_name};")
+                connection_10.commit()
 
-                def on_confirm():
-                    new_data_type = data_type_combobox.get()
+                # Inform the user that the column has been renamed
+                messagebox.showinfo("Success", f"Column '{selected_column}' renamed to '{new_column_name}' successfully!")
 
-                    if new_data_type:
-                        connection_12 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
-                        cursor = connection_12.cursor()
+                # Fetch and print the updated columns
+                updated_columns = get_columns_col(selected_database, selected_table)
 
-                        # Execute the SQL statement to change the column type
-                        cursor.execute(f"PRAGMA foreign_keys=off;")
-                        cursor.execute(f"BEGIN TRANSACTION;")
-                        cursor.execute(f"CREATE TEMPORARY TABLE backup({', '.join(get_columns(selected_database, selected_table))});")
-                        cursor.execute(f"INSERT INTO backup SELECT * FROM {selected_table};")
-                        cursor.execute(f"DROP TABLE {selected_table};")
-                        cursor.execute(f"CREATE TABLE {selected_table}({', '.join(get_columns(selected_database, selected_table)).replace(selected_column, f'{selected_column} {new_data_type}')});")
-                        cursor.execute(f"INSERT INTO {selected_table} SELECT * FROM backup;")
-                        cursor.execute(f"DROP TABLE backup;")
-                        cursor.execute(f"COMMIT;")
-
-                        connection_12.commit()
-
-                        # Inform the user that the column type has been changed
-                        messagebox.showinfo("Success", f"Column type for '{selected_column}' changed to '{new_data_type}' successfully!")
-
-                        # Fetch and print the updated columns
-                        update_column_dropdown(selected_database, selected_table)
-                        updated_columns = get_columns(selected_database, selected_table)
-                        print(updated_columns)
-
-                        popup.destroy()
-
-                ttk.Button(popup, text="Confirm", command=on_confirm).grid(row=2, column=0, columnspan=2, pady=10)
+                # Update the values in contentframe_3C_dropdown
+                updated_values = ["Select Column"] + updated_columns
+                contentframe_3C_dropdown['values'] = updated_values
+                contentframe_3C_selection.set("Select Column")
 
             except sqlite3.Error as e:
-                messagebox.showerror("Error", f"Error changing column type: {e}")
+                messagebox.showerror("Error", f"Error renaming column: {e}")
             finally:
-                if connection_12:
-                    connection_12.close()
-                    
-    def on_clear_column_content(selected_database, selected_table):
-        selected_column = contentframe_3C_selection.get()
+                if connection_10 is not None:
+                    connection_10.close()
 
-        if selected_column != "Select Column":
-            connection_13 = None  # Initialize the connection_13 variable
+def on_delete_column(selected_database, selected_table):
+    selected_column = contentframe_3C_selection.get()
 
-            try:
-                connection_13 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
-                cursor = connection_13.cursor()
+    if selected_column != "Select Column":
+        connection_11 = None  # Initialize the connection_11 variable
 
-                # Execute the SQL statement to clear the content of the selected column
-                cursor.execute(f"UPDATE {selected_table} SET {selected_column} = NULL;")
-
-                connection_13.commit()
-
-                # Inform the user that the content has been cleared
-                messagebox.showinfo("Success", f"Content of column '{selected_column}' cleared successfully!")
-
-            except sqlite3.Error as e:
-                messagebox.showerror("Error", f"Error clearing column content: {e}")
-
-            finally:
-                if connection_13:
-                    connection_13.close()
-                    
-    def show_all_columns_and_types(selected_database, selected_table):
-        connection_14 = None  # Initialize connection_14 outside the try block
-        
         try:
-            connection_14 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
-            cursor = connection_14.cursor()
+            connection_11 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
+            cursor = connection_11.cursor()
 
-            # Fetch column names and types from the specified table
-            cursor.execute(f"PRAGMA table_info({selected_table});")
-            columns_info = cursor.fetchall()
+            # Execute the SQL statement to delete the column
+            cursor.execute(f"ALTER TABLE {selected_table} DROP COLUMN {selected_column};")
+            connection_11.commit()
 
-            # Create a popup window to display the information
-            popup = tk.Toplevel(window)
-            popup.title("Columns and Types")
-            
-            # Create a Treeview widget for displaying the information
-            columns_tree = ttk.Treeview(popup)
-            columns_tree["columns"] = ("Column Name", "Type")
-            columns_tree.heading("#0", text="Index")
-            columns_tree.column("#0", width=50)
-            columns_tree.heading("Column Name", text="Column Name")
-            columns_tree.column("Column Name", width=150)
-            columns_tree.heading("Type", text="Type")
-            columns_tree.column("Type", width=100)
+            # Inform the user that the column has been deleted
+            messagebox.showinfo("Success", f"Column '{selected_column}' deleted successfully!")
 
-            # Insert data into the Treeview
-            for index, column_info in enumerate(columns_info, 1):
-                column_name = column_info[1]
-                column_type = column_info[2]
-                columns_tree.insert("", str(index), text=str(index), values=(column_name, column_type))
+            # Fetch and print the updated columns
+            update_column_dropdown(selected_database, selected_table)
+            updated_columns = get_columns_col(selected_database, selected_table)
+            print(updated_columns)
 
-
-            columns_tree.pack(padx=10, pady=10)
-            
         except sqlite3.Error as e:
-            messagebox.showerror("Error", f"Error fetching columns and types: {e}")
+            messagebox.showerror("Error", f"Error deleting column: {e}")
+
         finally:
-            if connection_14:
-                connection_14.close()
+            if connection_11:
+                connection_11.close()
+
+
+def update_column_dropdown(selected_database, selected_table):
+    columns = get_columns_col(selected_database, selected_table)
+    updated_values = ["Select Column"] + columns
+    contentframe_3C_dropdown['values'] = updated_values
+    contentframe_3C_selection.set("Select Column")
+        
+def on_change_column_type(selected_database, selected_table):
+    selected_column = contentframe_3C_selection.get()
+
+    if selected_column != "Select Column":
+        # Create data_types inside the function
+        data_types = ["TEXT", "INTEGER", "REAL", "DECIMAL", "BOOLEAN", "FLOAT"]
+        connection_12 = None
+        try:
+            # Create the data types dropdown in a popup window
+            popup = tk.Toplevel(window)
+            popup.title("Change Column Type")
+
+            ttk.Label(popup, text="Data Type:").grid(row=1, column=0, padx=5, pady=5)
+            data_type_combobox = ttk.Combobox(popup, values=data_types, state="readonly")
+            data_type_combobox.set(data_types[0])
+            data_type_combobox.grid(row=1, column=1, padx=5, pady=5)
+
+            def on_confirm():
+                new_data_type = data_type_combobox.get()
+
+                if new_data_type:
+                    connection_12 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
+                    cursor = connection_12.cursor()
+
+                    # Execute the SQL statement to change the column type
+                    cursor.execute(f"PRAGMA foreign_keys=off;")
+                    cursor.execute(f"BEGIN TRANSACTION;")
+                    cursor.execute(f"CREATE TEMPORARY TABLE backup({', '.join(get_columns_col(selected_database, selected_table))});")
+                    cursor.execute(f"INSERT INTO backup SELECT * FROM {selected_table};")
+                    cursor.execute(f"DROP TABLE {selected_table};")
+                    cursor.execute(f"CREATE TABLE {selected_table}({', '.join(get_columns_col(selected_database, selected_table)).replace(selected_column, f'{selected_column} {new_data_type}')});")
+                    cursor.execute(f"INSERT INTO {selected_table} SELECT * FROM backup;")
+                    cursor.execute(f"DROP TABLE backup;")
+                    cursor.execute(f"COMMIT;")
+
+                    connection_12.commit()
+
+                    # Inform the user that the column type has been changed
+                    messagebox.showinfo("Success", f"Column type for '{selected_column}' changed to '{new_data_type}' successfully!")
+
+                    # Fetch and print the updated columns
+                    update_column_dropdown(selected_database, selected_table)
+                    updated_columns = get_columns_col(selected_database, selected_table)
+                    print(updated_columns)
+
+                    popup.destroy()
+
+            ttk.Button(popup, text="Confirm", command=on_confirm).grid(row=2, column=0, columnspan=2, pady=10)
+
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", f"Error changing column type: {e}")
+        finally:
+            if connection_12:
+                connection_12.close()
+                    
+def on_clear_column_content(selected_database, selected_table):
+    selected_column = contentframe_3C_selection.get()
+
+    if selected_column != "Select Column":
+        connection_13 = None  # Initialize the connection_13 variable
+
+        try:
+            connection_13 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
+            cursor = connection_13.cursor()
+
+            # Execute the SQL statement to clear the content of the selected column
+            cursor.execute(f"UPDATE {selected_table} SET {selected_column} = NULL;")
+
+            connection_13.commit()
+
+            # Inform the user that the content has been cleared
+            messagebox.showinfo("Success", f"Content of column '{selected_column}' cleared successfully!")
+
+        except sqlite3.Error as e:
+            messagebox.showerror("Error", f"Error clearing column content: {e}")
+
+        finally:
+            if connection_13:
+                connection_13.close()
+                    
+def show_all_columns_and_types(selected_database, selected_table):
+    connection_14 = None  # Initialize connection_14 outside the try block
+    
+    try:
+        connection_14 = sqlite3.connect(os.path.join(current_directory, f"{selected_database}.db"))
+        cursor = connection_14.cursor()
+
+        # Fetch column names and types from the specified table
+        cursor.execute(f"PRAGMA table_info({selected_table});")
+        columns_info = cursor.fetchall()
+
+        # Create a popup window to display the information
+        popup = tk.Toplevel(window)
+        popup.title("Columns and Types")
+        
+        # Create a Treeview widget for displaying the information
+        columns_tree = ttk.Treeview(popup)
+        columns_tree["columns"] = ("Column Name", "Type")
+        columns_tree.heading("#0", text="Index")
+        columns_tree.column("#0", width=50)
+        columns_tree.heading("Column Name", text="Column Name")
+        columns_tree.column("Column Name", width=150)
+        columns_tree.heading("Type", text="Type")
+        columns_tree.column("Type", width=100)
+
+        # Insert data into the Treeview
+        for index, column_info in enumerate(columns_info, 1):
+            column_name = column_info[1]
+            column_type = column_info[2]
+            columns_tree.insert("", str(index), text=str(index), values=(column_name, column_type))
+
+
+        columns_tree.pack(padx=10, pady=10)
+        
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Error fetching columns and types: {e}")
+    finally:
+        if connection_14:
+            connection_14.close()
 
 
     
@@ -945,7 +957,7 @@ def content_update_tables(event):
     global contentframe_1D_selection_database
     selected_database = contentframe_1D_selection_database.get()
     if selected_database != "Select Database":
-        tables = get_tables(selected_database)
+        tables = get_tables_cm(selected_database)
         contentframe_1D_dropdown_table['values'] = ["Select Table"] + tables
         contentframe_1D_dropdown_table.set("Select Table")
 
