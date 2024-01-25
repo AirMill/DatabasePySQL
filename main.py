@@ -6,7 +6,7 @@ import sqlite3
 from turtle import fillcolor
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
-
+from pathlib import Path
 
 
 
@@ -841,9 +841,6 @@ def show_all_columns_and_types(selected_database, selected_table):
     
 ####################################################################################################################################
 
-current_directory_mc = os.getcwd()
-current_database_mc = None  # Make sure to set these values appropriately in your code
-current_table_mc = None
 
 def manage_content():
     for widget in window.winfo_children():
@@ -853,151 +850,364 @@ def manage_content():
 
     s = ttk.Style()
     s.configure("Frame1.TFrame", background='grey')
-    
-    masterframe_1D = ttk.Frame(window, borderwidth=2,relief="groove", style="Frame1.TFrame")
+
+    masterframe_1D = ttk.Frame(window, borderwidth=2, relief="groove", style="Frame1.TFrame")
     masterframe_1D.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
     masterframe_1D.columnconfigure(0, weight=1)
 
-    contentframe_1D = ttk.Frame(masterframe_1D, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+    contentframe_1D = ttk.Frame(masterframe_1D, borderwidth=2, relief="groove", style="My.TFrame", width=1)
     contentframe_1D.grid(row=1, column=0, sticky='ew', padx=30, pady=5)
-    contentframe_2D = ttk.Frame(masterframe_1D, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+
+    contentframe_2D = ttk.Frame(masterframe_1D, borderwidth=2, relief="groove", style="My.TFrame", width=1)
     contentframe_2D.grid(row=2, column=0, sticky='ew', padx=30, pady=5)
-    contentframe_3D = ttk.Frame(masterframe_1D, borderwidth=2,relief="groove", style="My.TFrame", width=1)
+
+    contentframe_3D = ttk.Frame(masterframe_1D, borderwidth=2, relief="groove", style="My.TFrame", width=1)
     contentframe_3D.grid(row=3, column=0, sticky='ew', padx=30, pady=5)
+    
+    contentframe_4D = ttk.Frame(masterframe_1D, borderwidth=2, relief="groove", style="My.TFrame", width=1)
+    contentframe_4D.grid(row=4, column=0, sticky='ew', padx=30, pady=5)
+    
+    contentframe_5D = ttk.Frame(masterframe_1D, borderwidth=2, relief="groove", style="My.TFrame", width=1)
+    contentframe_5D.grid(row=5, column=0, sticky='ew', padx=30, pady=5)
+    
+    contentframe_6D = ttk.Frame(masterframe_1D, borderwidth=2, relief="groove", style="My.TFrame", width=1)
+    contentframe_6D.grid(row=6, column=0, sticky='ew', padx=30, pady=5)
+    
+    contentframe_7D = ttk.Frame(masterframe_1D, borderwidth=2, relief="groove", style="My.TFrame", width=1)
+    contentframe_7D.grid(row=7, column=0, sticky='ew', padx=30, pady=5)
+
+    global contentframe_1D_selection, contentframe_1D_dropdown
+    contentframe_1D_selection = tk.StringVar()
+    contentframe_1D_selection.set("Select Database")
+    contentframe_1D_dropdown = ttk.Combobox(contentframe_1D, values=["Select Database"] + get_databases(), state='readonly', textvariable=contentframe_1D_selection)
+    contentframe_1D_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    label_1D = ttk.Label(contentframe_1D, text='Select database from the dropdown menu', background='#7BCCB5')
+    label_1D.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    contentframe_1D_dropdown.bind("<<ComboboxSelected>>", update_table_dropdown_cm)
+
+    global contentframe_2D_selection, contentframe_2D_dropdown
+    contentframe_2D_selection = tk.StringVar()
+    contentframe_2D_selection.set("Select Table")
+    contentframe_2D_dropdown = ttk.Combobox(contentframe_2D, values=["Select Table"], state='readonly', textvariable=contentframe_2D_selection)
+    contentframe_2D_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    label_2D = ttk.Label(contentframe_2D, text='Select table from the dropdown menu', background='#7BCCB5')
+    label_2D.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    contentframe_2D_dropdown.bind("<<ComboboxSelected>>", update_column_dropdown_cm)
+
+    global contentframe_3D_selection, contentframe_3D_dropdown
+    contentframe_3D_selection = tk.StringVar()
+    contentframe_3D_selection.set("Select Column for a file name")
+    contentframe_3D_dropdown = ttk.Combobox(contentframe_3D, values=["Select Column"], state='readonly', textvariable=contentframe_3D_selection)
+    contentframe_3D_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    label_3D = ttk.Label(contentframe_3D, text='Select Column for a file name', background='#7BCCB5')
+    label_3D.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    contentframe_3D_dropdown.bind("<<ComboboxSelected>>", update_column_dropdown_cm)
+    
+    global contentframe_4D_selection, contentframe_4D_dropdown
+    contentframe_4D_selection = tk.StringVar()
+    contentframe_4D_selection.set("Select Column for a file content")
+    contentframe_4D_dropdown = ttk.Combobox(contentframe_4D, values=["Select Column"], state='readonly', textvariable=contentframe_4D_selection)
+    contentframe_4D_dropdown.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    label_4D = ttk.Label(contentframe_4D, text='Select Column for a file content', background='#7BCCB5')
+    label_4D.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    contentframe_4D_dropdown.bind("<<ComboboxSelected>>", update_column_dropdown_cm)
+    
+    
+    global chosen_file_name_cm
+    global chosen_file_content_cm
+    global chosen_folder_cm
+    chosen_folder_cm = tk.StringVar()
+    chosen_folder_cm = ""
+    chosen_file_name_cm = tk.StringVar()
+    chosen_file_content_cm = tk.StringVar()
+    
+    
+    button_5D_1 = ttk.Button(contentframe_5D, text='Choose file', command=choose_file_cm)
+    button_5D_1.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    button_5D_2 = ttk.Button(contentframe_5D, text='Add file', command=add_file_cm)
+    button_5D_2.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    label_5D_1 = ttk.Label(contentframe_5D, text='Press to upload single file', background='#7BCCB5')
+    label_5D_1.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
+   
+    button_5D_3 = ttk.Button(contentframe_5D, text='Choose folder', command=choose_folder_cm)
+    button_5D_3.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+    button_5D_4 = ttk.Button(contentframe_5D, text='Add folder', command=upload_folder_cm)
+    button_5D_4.grid(row=1, column=1, sticky='nsew', padx=5, pady=5)
+    label_5D_2 = ttk.Label(contentframe_5D, text='Press to upload a folder', background='#7BCCB5')
+    label_5D_2.grid(row=1, column=2, sticky='nsew', padx=5, pady=5)
+    
+    button_6D_1 = ttk.Button(contentframe_6D, text='Delete a Row', command=delete_row_cm)
+    button_6D_1.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    label_6D_1 = ttk.Label(contentframe_6D, text='Press to delete a row in a table if you dont need it', background='#7BCCB5')
+    label_6D_1.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    
+    button_7D_1 = ttk.Button(contentframe_7D, text='Show Content', command=show_table_content_cm)
+    button_7D_1.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
+    label_7D_1 = ttk.Label(contentframe_7D, text='Press to show table content', background='#7BCCB5')
+    label_7D_1.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+    
+
+
+def get_columns_cm(database_name, table_name):
+    connection_15 = None  # Initialize the connection_15 variable
+
+    try:
+        connection_15 = sqlite3.connect(os.path.join(current_directory, f"{database_name}.db"))
+        cursor = connection_15.cursor()
+
+        # Fetch column names from the specified table
+        cursor.execute(f"PRAGMA table_info({table_name});")
+        columns = cursor.fetchall()
+
+        # Extract column names from the result
+        column_names = [column[1] for column in columns]
+
+        return column_names
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Error fetching columns: {e}")
+    finally:
+        if connection_15:
+            connection_15.close()
+            
+def update_column_dropdown_cm(event):
+    selected_table = contentframe_2D_selection.get()
+    selected_database = contentframe_1D_selection.get()
+
+    if selected_table != "Select Table" and selected_database != "Select Database":
+        columns = get_columns_cm(selected_database, selected_table)
+        updated_values = ["Select Column"] + columns
+        contentframe_3D_dropdown['values'] = updated_values
+        contentframe_4D_dropdown['values'] = updated_values
 
 
 
-    global contentframe_1D_dropdown_database
-    global contentframe_1D_dropdown_table
-    global contentframe_1D_selection_database
-    global contentframe_1D_selection_table
-         
-    contentframe_1D_selection_database = tk.StringVar()
-    contentframe_1D_selection_database.set("Select Database")
-    contentframe_1D_dropdown_database = ttk.Combobox(contentframe_1D, values=["Select Database"] + get_databases_cm(), state='readonly', textvariable=contentframe_1D_selection_database)
-    contentframe_1D_dropdown_database.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-    contentframe_1D_dropdown_database.bind("<<ComboboxSelected>>", content_update_tables)
- 
-    contentframe_1D_selection_table = tk.StringVar()
-    contentframe_1D_selection_table.set("Select Table")   
-    contentframe_1D_dropdown_table = ttk.Combobox(contentframe_1D, values=["Select Table"]+get_tables_cm(contentframe_1D_selection_database), state='readonly', textvariable=contentframe_1D_selection_table)
-    contentframe_1D_dropdown_table.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
+def get_tables_cm(database_name):
+    connection_15_1 = None  # Initialize the connection_15_1 variable
 
-    label_1D = ttk.Label(contentframe_1D, text='Select database and table where to perform an upload', background='#7DCCD5')
-    label_1D.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
+    try:
+        connection_15_1 = sqlite3.connect(os.path.join(
+            current_directory, f"{database_name}.db"))
+        cursor = connection_15_1.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        return [table[0] for table in tables]
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"Error accessing tables: {e}")
+    finally:
+        if connection_15_1:
+            connection_15_1.close()
+            
+def update_table_dropdown_cm(event):
+        selected_database = contentframe_1D_selection.get()
+        if selected_database != "Select Database":
+            tables = get_tables_cm(selected_database)                                  
+            updated_values = ["Select Table"] + tables
+            contentframe_2D_dropdown['values'] = updated_values
+            contentframe_2D_selection.set("Select Table") 
+            
+            
+#-----------------------
+
+# Function to handle choosing a text file
+def choose_file_cm():
+    file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
+    if file_path:
+        try:
+            with open(file_path, 'r') as file:
+                file_content = file.read()
+
+            # Update new variables with chosen file name and content
+            chosen_file_name_cm.set(file_name_from_path_cm(file_path))
+            chosen_file_content_cm.set(file_content)
+
+            messagebox.showinfo("Success", "File chosen successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error reading file: {e}")
+
+def file_name_from_path_cm(file_path):
+    return os.path.splitext(os.path.basename(file_path))[0]
 
 
+def add_file_cm():
+    global chosen_file_name_cm, chosen_file_content_cm
+    selected_database = contentframe_1D_selection.get()
+    selected_table = contentframe_2D_selection.get()
+    selected_column_3D = contentframe_3D_selection.get()
+    selected_column_4D = contentframe_4D_selection.get()
 
-    button_2D_1 = ttk.Button(contentframe_2D, text='Choose one file to upload', command=lambda: upload_file_dialog(contentframe_1D_selection_database.get(), contentframe_1D_selection_table.get()))
-    button_2D_1.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-    label_2D_1 = ttk.Label(contentframe_2D, text='Select database and table where to perform an upload', background='#7DCCD5')
-    label_2D_1.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
-
-    button_2D_2 = ttk.Button(contentframe_2D, text='Choose folder to upload', command=lambda: print("Tables!"))
-    button_2D_2.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
-    label_2D_2 = ttk.Label(contentframe_2D, text='Select database and table where to perform an upload', background='#7DCCD5')
-    label_2D_2.grid(row=1, column=1, sticky='nsew', padx=5, pady=5)
-
-    label_3D = ttk.Label(contentframe_3D, text='Result of the upload:', background='#7DCCD5')
-    label_3D.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-
-def upload_file_dialog(selected_database, selected_table):
     if selected_database == "Select Database" or selected_table == "Select Table":
         messagebox.showerror("Error", "Please select a database and table.")
         return
 
-    popup = Toplevel()
-    popup.title("Upload File")
+    if chosen_file_name_cm.get() == "Select Column for a file name" or chosen_file_content_cm.get() == "Select Column for a file content":
+        messagebox.showerror("Error", "Please choose a file and content columns.")
+        return
 
-    masterframe_popup = ttk.Frame(popup, borderwidth=2,
-                               relief="groove", style="Frame1.TFrame")
-    masterframe_popup.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-    masterframe_popup.columnconfigure(0, weight=1)
-    
-    contentframe_popup = ttk.Frame(masterframe_popup, borderwidth=2,relief="groove", style="My.TFrame", width=1)
-    contentframe_popup.grid(row=1, column=0, sticky='ew', padx=30, pady=5)
-
-    columns_label = ttk.Label(contentframe_popup, text="Select column for file content:")
-    columns_label.grid(row=0, column=0, padx=10, pady=10)
-
-    file_content_dropdown = ttk.Combobox(contentframe_popup, values=get_table_columns(selected_table), state='readonly')
-    file_content_dropdown.grid(row=0, column=1, padx=10, pady=10)
-
-    file_name_label = ttk.Label(contentframe_popup, text="Select column for file name:")
-    file_name_label.grid(row=1, column=0, padx=10, pady=10)
-
-    file_name_dropdown = ttk.Combobox(contentframe_popup, values=get_table_columns(selected_table), state='readonly')
-    file_name_dropdown.grid(row=1, column=1, padx=10, pady=10)
-
-    browse_button = ttk.Button(contentframe_popup, text="Browse", command=lambda: browse_file(file_content_dropdown, file_name_dropdown))
-    browse_button.grid(row=2, column=0, columnspan=2, pady=10)
-
-    submit_button = ttk.Button(contentframe_popup, text="Submit", command=lambda: submit_upload(selected_database, selected_table, file_content_dropdown.get(), file_name_dropdown.get()))
-    submit_button.grid(row=3, column=0, columnspan=2, pady=10)
-
-def browse_file(file_content_dropdown, file_name_dropdown):
-    file_path = filedialog.askopenfilename(title="Select a file to upload")
-    if file_path:
-        # Perform any additional actions here if needed
-        pass
-
-def submit_upload(selected_database, selected_table, file_content_column, file_name_column):
-    # Implement the file upload logic here
-    # Use the provided parameters to handle the file upload to the selected table
-    # For demonstration, let's print the selected values.
-    print("Selected Database:", selected_database)
-    print("Selected Table:", selected_table)
-    print("File Content Column:", file_content_column)
-    print("File Name Column:", file_name_column)
-    messagebox.showinfo("Upload Complete", "File uploaded successfully!")
-    # Add further actions if needed
-
-def content_update_tables(event):
-    global contentframe_1D_dropdown_table
-    global contentframe_1D_selection_database
-    selected_database = contentframe_1D_selection_database.get()
-    if selected_database != "Select Database":
-        tables = get_tables_cm(selected_database)
-        contentframe_1D_dropdown_table['values'] = ["Select Table"] + tables
-        contentframe_1D_dropdown_table.set("Select Table")
-
-def get_databases_cm():
-    current_directory = os.getcwd()
-    database_files = [file for file in os.listdir(current_directory) if file.endswith(".db")]
-    return database_files
-
-# Replace this function with your actual implementation
-# Replace this function with your actual implementation
-def get_tables_cm(database):
-    current_directory = os.getcwd()
-    db_path = os.path.join(current_directory, f"{database}.db")
-
-    connection_15 = None  # Initialize connection_15 outside the try block
+    if selected_column_3D == "Select Column for a file name" or selected_column_4D == "Select Column for a file content":
+        messagebox.showerror("Error", "Please choose columns for file name and content.")
+        return
 
     try:
-        connection_15 = sqlite3.connect(db_path)
-        cursor = connection_15.cursor()
+        # Connect to the SQLite database
+        connection_file = sqlite3.connect(f"{selected_database}.db")
+        cursor = connection_file.cursor()
 
-        # Fetch all table names from the SQLite master table
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
-        tables = [table[0] for table in cursor.fetchall()]
+        # Insert data into the selected table
+        insert_query = f"INSERT INTO {selected_table} ({selected_column_3D}, {selected_column_4D}) VALUES (?, ?)"
+        cursor.execute(insert_query, (chosen_file_name_cm.get(), chosen_file_content_cm.get()))
 
-        return tables
+        # Commit the changes and close the connection
+        connection_file.commit()
+        connection_file.close()
 
-    except sqlite3.Error as e:
-        # Handle the error, you can print or log the error message
-        print(f"Error retrieving tables for database '{database}': {e}")
-        return []
+        messagebox.showinfo("Success", "File added successfully!")
+    except Exception as e:
+        messagebox.showerror("Error", f"Error adding file to the database: {e}")
 
-    finally:
-        if connection_15:
-            connection_15.close()
+#========================================
+# Function to add a file to the specified table
+def add_file_to_table_cm(database_name, table_name, file_name_column, content_column):
+    try:
+        connection_addfolder = sqlite3.connect(f"{database_name}.db")
+        cursor = connection_addfolder.cursor()
+
+        # Read the file content from the global variable
+        file_content = chosen_file_content_cm.get()
+
+        # Add the file to the specified table using the selected column names
+        cursor.execute(f"INSERT INTO {table_name} ({file_name_column}, {content_column}) VALUES (?, ?)", (chosen_file_name_cm.get(), file_content))
+
+        # Commit the changes and close the connection
+        connection_addfolder.commit()
+        connection_addfolder.close()
+
+        # messagebox.showinfo("Success", "Files added to the table successfully!")
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Error adding file to the table: {e}")
 
 
-# "connection" is possibly unbound
-# Replace this function with your actual implementation
-def get_table_columns(table_name):
-    return ["Column1", "Column2"]
+
+# Function to choose a folder and upload all text files
+def choose_folder_cm():
+    global chosen_folder_cm
+    folder_path = filedialog.askdirectory()
+    if folder_path:
+        chosen_folder_cm = folder_path
+        messagebox.showinfo("Success", "Folder chosen successfully!")
+# Function to upload all text files from the chosen folder
+
+def upload_folder_cm():
+    global chosen_folder_cm
+    try:
+        selected_database = contentframe_1D_selection.get()
+        selected_table = contentframe_2D_selection.get()
+
+        if selected_database == "Select Database" or selected_table == "Select Table":
+            messagebox.showerror("Error", "Please select a database and table.")
+            return
+
+        if not chosen_folder_cm:
+            messagebox.showerror("Error", "Please choose a folder.")
+            return
+
+        for file_path in Path(chosen_folder_cm).glob("*.txt"):
+            try:
+                with open(file_path, 'r') as file:
+                    file_content = file.read()
+
+                # Extract file name without extension
+                file_name = file_name_from_path_cm(file_path)
+
+                # Update global variables
+                chosen_file_name_cm.set(file_name)
+                chosen_file_content_cm.set(file_content)
+
+                # Add the file to the specified table
+                add_file_to_table_cm(selected_database, selected_table, contentframe_3D_selection.get(), contentframe_4D_selection.get())
+
+            except Exception as e:
+                messagebox.showerror("Error", f"Error reading file {file_path}: {e}")
+
+        messagebox.showinfo("Success", "Files uploaded successfully!")
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Error uploading files: {e}")
+
+    
+
+#++++++++++++++++++++++++++++++++++
+def show_table_content_cm():
+    selected_database = contentframe_1D_selection.get()
+    selected_table = contentframe_2D_selection.get()
+
+    if selected_database == "Select Database" or selected_table == "Select Table":
+        messagebox.showerror("Error", "Please select a database and table.")
+        return
+
+    try:
+        # Connect to the SQLite database
+        connection_show_D = sqlite3.connect(f"{selected_database}.db")
+        cursor = connection_show_D.cursor()
+
+        # Retrieve all rows from the selected table
+        cursor.execute(f"SELECT * FROM {selected_table}")
+        table_content = cursor.fetchall()
+
+        # Close the connection
+        connection_show_D.close()
+
+        # Create a pop-up window to display the table content
+        popup = tk.Toplevel(window)
+        popup.title("Table Content")
+        
+        # Create a Text widget to display the content
+        text_widget = tk.Text(popup, wrap="none", height=20, width=100)
+        text_widget.grid(row=0, column=0, padx=10, pady=10)
+
+        # Insert the table content into the Text widget
+        for row in table_content:
+            text_widget.insert(tk.END, f"{row}\n")
+
+        # Make the Text widget read-only
+        text_widget.config(state="disabled")
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Error retrieving table content: {e}")
+
+#-------------------------------------======================-------------------------------
+def delete_row_cm():
+    selected_database = contentframe_1D_selection.get()
+    selected_table = contentframe_2D_selection.get()
+
+    if selected_database == "Select Database" or selected_table == "Select Table":
+        messagebox.showerror("Error", "Please select a database and table.")
+        return
+
+    # Create a pop-up window to get the row ID from the user
+    row_id = simpledialog.askinteger("Delete Row", "Enter the Row ID to delete:")
+    if row_id is None:
+        messagebox.showinfo("Info", "Delete operation canceled.")
+        return  # User clicked Cancel
+
+    try:
+        # Connect to the SQLite database
+        connection_delete_row = sqlite3.connect(f"{selected_database}.db")
+        cursor = connection_delete_row.cursor()
+
+        # Execute the DELETE query
+        cursor.execute(f"DELETE FROM {selected_table} WHERE rowid = ?", (row_id,))
+
+        # Commit the changes and close the connection
+        connection_delete_row.commit()
+        connection_delete_row.close()
+
+        messagebox.showinfo("Success", f"Row {row_id} deleted successfully!")
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Error deleting row: {e}")
+
+
 
 ##############################################################################################################################################
     
